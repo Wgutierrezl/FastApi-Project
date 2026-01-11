@@ -1,7 +1,12 @@
 from pydantic import BaseModel
 
-class project(BaseModel):
+class projectCreated(BaseModel):
     
-    user_id:str
     name:str
+    description:str
+    
+class ProjectResponse(BaseModel):
+    project_id: int
+    user_id:str
+    name:str   
     description:str

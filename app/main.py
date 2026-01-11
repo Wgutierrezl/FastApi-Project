@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.controllers.user_controller import router as user_routes
+from app.controllers.project_controller import router as project_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, engine
 
@@ -17,3 +18,4 @@ app.add_middleware(
 )
 
 app.include_router(user_routes)
+app.include_router(project_router)
