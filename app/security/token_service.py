@@ -14,6 +14,7 @@ class TokenService():
             "name":user.name,
             "email":user.email,
             "is_active":user.is_active,
+            "role":user.role,
             "exp": datetime.utcnow() + timedelta(minutes=self.EXPIRE_MINUTES)
         }
         

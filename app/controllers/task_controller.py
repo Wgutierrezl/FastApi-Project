@@ -7,6 +7,7 @@ from app.models.task import Task
 from app.schemas.task import TaskCreated, TaskResponse, TaskUpdated
 from app.dependencies import get_db_session
 from app.security.jwt_dependency import current_user
+from app.security.role_dependency import require_roles
 
 
 router=APIRouter(prefix='/tasks',
@@ -40,7 +41,8 @@ def create_Task(data:TaskCreated,
         
 @router.get('/getAllTasks', response_model=List[TaskResponse])
 def get_all_tasks(db:Session=Depends(get_db_session),
-                  current_user:dict=Depends(current_user)) -> List[TaskResponse]:
+                  current_user:dict=Depends(current_user),
+                  user=Depends(require_roles("superadmin"))) -> List[TaskResponse]:
     try:
         response=_service.get_all_task(db)
         
@@ -75,7 +77,7 @@ def get_my_tasks(db:Session=Depends(get_db_session),
         
     except HTTPException as e:
         raise HTTPException(
-                status_code=status.WS_1014_BAD_GATEWAY,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f'there arent tasks inot the bd {e}'
             )
         
@@ -102,7 +104,7 @@ def delete_task(id:int,
             detail=f'we cant delete the task {e}'
         )
         
-@router.put('upddateTask/:taskId', response_model=TaskResponse)
+@router.put('/updateTask/:taskId', response_model=TaskResponse)
 def updated_task_by_id(taskId:int,
                        data:TaskUpdated,
                        db:Session=Depends(get_db_session),

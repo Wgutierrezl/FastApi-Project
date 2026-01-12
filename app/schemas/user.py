@@ -3,12 +3,14 @@ from pydantic import BaseModel
 class UserCreated(BaseModel):
     name:str
     email:str
+    role:str
     password:str
     
 class UserResponse(BaseModel):
     user_id:str
     name:str
     email:str
+    role:str
     is_active:bool
     
 class LoginDTO(BaseModel):

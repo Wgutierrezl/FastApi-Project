@@ -1,3 +1,4 @@
+from typing import List
 from app.repositories.user_repository import UserRepository
 from app.security.hash_service import HashService
 from app.security.token_service import TokenService
@@ -19,6 +20,7 @@ class UserService():
         user=User(
             name=data.name,
             email=data.email,
+            role=data.role,
             password=hass_password,
             is_active=True
         )
@@ -47,6 +49,22 @@ class UserService():
     
     def get_user_by_id(self, db:Session, user_id:str) -> UserResponse:
         user=self._repo.get_profile(db, user_id)
+        
+        if not user:
+            return None
+        
+        return user
+    
+    def get_all_users(self, db:Session) -> List[UserResponse]:
+        users=self._repo.get_all_users(db)
+        
+        if not users:
+            return None
+        
+        return users
+    
+    def get_user_by_id(self, db:Session, user_id:str) -> UserResponse:
+        user=self._repo.get_user_by_id(db, user_id)
         
         if not user:
             return None

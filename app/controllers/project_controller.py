@@ -6,6 +6,7 @@ from app.security.jwt_dependency import current_user
 from app.repositories.project_repository import ProjectRepository
 from app.services.project_service import ProjectService
 from app.schemas.project import ProjectResponse, projectCreated
+from app.security.role_dependency import require_roles
 
 _service=ProjectService(projectRepository=ProjectRepository())
 
@@ -36,7 +37,8 @@ def create_project(data:projectCreated,
 @router.get('/getProjectsByUserId/:userId', response_model=List[ProjectResponse])
 def get_projects_by_userid(userId:str,
                        db:Session=Depends(get_db_session),
-                       current_user:dict=Depends(current_user)):
+                       current_user:dict=Depends(current_user),
+                       user=Depends(require_roles('superadmin'))) -> List[ProjectResponse]:
     try:
         response=_service.get_projects_by_user_id(db, userId)
         
@@ -76,7 +78,8 @@ def get_my_projects(db:Session=Depends(get_db_session),
 
 @router.get('/getAllProjects', response_model=List[ProjectResponse])    
 def get_all_projects(db:Session=Depends(get_db_session),
-                     current_user:dict=Depends(current_user)) -> List[ProjectResponse]:
+                     current_user:dict=Depends(current_user),
+                     user=Depends(require_roles('superadmin'))) -> List[ProjectResponse]:
     try:
         response=_service.get_all_projects(db)
         
