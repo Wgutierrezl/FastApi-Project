@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
+from datetime import datetime
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -12,4 +13,4 @@ class Task(Base):
     title = Column(String, nullable=False)
     description = Column(String, nullable=True)
     status = Column(String, default='pending')
-    date = Column(DateTime, default=DateTime.now)    
+    date = Column(DateTime, default=datetime.now)    

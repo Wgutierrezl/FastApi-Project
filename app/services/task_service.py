@@ -18,8 +18,7 @@ class TaskService():
             project_id=data.project_id,
             title=data.title,
             description=data.description,
-            status='active',
-            date=datetime.now
+            status='active'
         )
         
         task_created=self._repo.create_task(db, task)
@@ -38,7 +37,7 @@ class TaskService():
         return response
     
     def get_all_task(self, db:Session) -> List[TaskResponse]:
-        response=self._repo.get_all_task()
+        response=self._repo.get_all_task(db)
         
         if not response:
             return None

@@ -10,7 +10,7 @@ from app.schemas.project import ProjectResponse, projectCreated
 _service=ProjectService(projectRepository=ProjectRepository())
 
 router=APIRouter(prefix='/projects',
-                 tags=['/Projects'],
+                 tags=['Projects'],
                  dependencies=[Depends(current_user)])
 
 @router.post('/createProject')
