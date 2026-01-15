@@ -1,2 +1,42 @@
+################################
+# 🐍 Python / FastAPI
+################################
+venv/
 __pycache__/
 *.pyc
+*.pyo
+.env
+.env.*
+.pytest_cache/
+
+################################
+# 🌍 Terraform
+################################
+# Terraform directories
+.terraform/
+
+# Terraform state files (CRITICAL)
+terraform.tfstate
+terraform.tfstate.*
+*.tfstate
+*.tfstate.backup
+
+# Terraform variable files (secrets)
+*.tfvars
+*.tfvars.json
+
+# Crash logs
+crash.log
+
+################################
+# 🧠 Editor / OS
+################################
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+################################
+# 🐳 Docker
+################################
+*.log
