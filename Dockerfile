@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Exponer puerto 8071
-EXPOSE 8071
+EXPOSE 8072
 
 # Comando para ejecutar la aplicación
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8071"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8072"]
