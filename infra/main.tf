@@ -13,7 +13,8 @@ provider "aws" {
 # 🔹 ECR
 module "ecr" {
   source = "./modulos/ecr"
-  ecr_repo_name = "fastapi-repo"
+  ecr_repo_name_dev = "fastapi-repo_dev"
+  ecr_repo_name_prod = "fastapi-repo_prod"
 }
 
 # 🔹 VPC
@@ -31,9 +32,9 @@ module "vpc" {
 # 🔹 Security Group
 module "sg" {
   source = "./modulos/sg"
-
   vpc_id = module.vpc.vpc_id
-  port   = 8000
+  port_dev = 8071
+  port_prod = 8072
 }
 
 # 🔹 ECS
@@ -41,11 +42,14 @@ module "ecs" {
   source = "./modulos/ecs"
 
   ecs_cluster_name  = "fastapi-cluster"
-  service_name      = "fastapi-service"
-  task_family       = "fastapi-task-family"
-  container_image   = module.ecr.repository_url 
-  container_port    = 8000
-
+  service_name_dev  = "fastapi-service-dev"
+  service_name_prod = "fastapi-service-prod"
+  task_family_dev   = "fastapi-task-family-dev"
+  task_family_prod  = "fastapi-task-family-prod"
+  container_image_dev   = module.ecr.repository_url_dev
+  container_image_prod  = module.ecr.repository_url_prod
+  container_port_dev = 8071
+  container_port_prod = 8072
   subnets_id        = module.vpc.subnet_ids
   security_group_id = module.sg.security_group_id
 }
