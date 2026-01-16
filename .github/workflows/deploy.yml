@@ -14,9 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      # 1. Checkout del código
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Configurar credenciales AWS
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -24,6 +26,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # 3. Detectar entorno (dev / prod)
       - name: Determine environment
         id: env
         run: |
@@ -41,59 +44,59 @@ jobs:
             echo "ecs_task_definition=${{ secrets.ECS_TASK_DEFINITION_PROD }}" >> $GITHUB_OUTPUT
           fi
 
+      # 4. Login a ECR
       - name: Login to Amazon ECR
         run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} \
+          | docker login --username AWS --password-stdin \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
+      # 5. Build de la imagen
       - name: Build Docker image
-        env:
-          ECR_REPOSITORY: ${{ steps.env.outputs.ecr_repository }}
         run: |
           docker build -t ${{ steps.env.outputs.ecr_repository }} .
 
+      # 6. Tag para ECR
       - name: Tag image for ECR
-        env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          ECR_REPOSITORY: ${{ steps.env.outputs.ecr_repository }}
         run: |
-          docker tag $ECR_REPOSITORY:latest $AWS_ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest
+          docker tag ${{ steps.env.outputs.ecr_repository }}:latest \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ steps.env.outputs.ecr_repository }}:latest
 
+      # 7. Push a ECR
       - name: Push image to Amazon ECR
-        env:
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          ECR_REPOSITORY: ${{ steps.env.outputs.ecr_repository }}
         run: |
-          docker push $AWS_ACCOUNT_ID.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPOSITORY:latest
+          docker push \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ steps.env.outputs.ecr_repository }}:latest
 
+      # 8. Descargar Task Definition actual
       - name: Download task definition
-        env:
-          ECS_TASK_DEFINITION: ${{ steps.env.outputs.ecs_task_definition }}
         run: |
-          aws ecs describe-task-definition --task-definition $ECS_TASK_DEFINITION --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition \
+          --task-definition ${{ steps.env.outputs.ecs_task_definition }} \
+          --query taskDefinition > task-definition.json
 
+      # 9. Actualizar imagen en la Task Definition
       - name: Update task definition
         id: task-def
-        uses: aws-actions/ecs-render-task-definition@v1
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
           container-name: fastapi
           image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ steps.env.outputs.ecr_repository }}:latest
 
+      # 10. Deploy a ECS
       - name: Deploy to Amazon ECS service
-        uses: aws-actions/ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ steps.env.outputs.ecs_service }}
           cluster: ${{ steps.env.outputs.ecs_cluster }}
           wait-for-service-stability: true
-          wait-for-service-stability-max-attempts: 10
-          wait-for-service-stability-delay-seconds: 30
 
+      # 11. Confirmación
       - name: Notify deployment
         if: success()
         run: |
-          echo "✅ Deploy successful to ${{ steps.env.outputs.environment }} environment"
-          echo "Environment: ${{ steps.env.outputs.environment }}"
+          echo "✅ Deploy successful to ${{ steps.env.outputs.environment }}"
           echo "Service: ${{ steps.env.outputs.ecs_service }}"
           echo "Cluster: ${{ steps.env.outputs.ecs_cluster }}"
-          echo "Image Tag: latest"
