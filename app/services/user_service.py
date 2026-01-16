@@ -37,7 +37,7 @@ class UserService():
         if user is None:
             return None
         
-        print("Verifying password for user:", user.email)
+        print("Verifying password for user: ", user.email)
         
         if not self._hash.verify_password(data.password, user.password):
             return None
